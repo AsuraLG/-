@@ -1,17 +1,19 @@
 #include <stdlib.h>
 
-/*
- * 以数组随机位置的数为哨兵的单路快速排序，时间复杂度O(n2)，属于非稳定排序
- * arr：要排序的数组
- * s：数组的起始下标
- * e：数组的末尾下标
- */
-void quicksort_oneway(int arr[], int s, int e)
+/* 取数组里三个数的中位数，返回其索引 */
+int findMid(int arr[], int i, int j, int k)
+{
+	if(arr[i] <= arr[j] && arr[i] <= arr[k])
+		return (arr[j] <= arr[k])? j: k;
+	if(arr[j] <= arr[i] && arr[j] <= arr[k])
+		return (arr[i] <= arr[k])? i: k;
+	return (arr[i] <= arr[j])? i: j;
+}
+
+int partition_oneway(int arr[], int s, int e)
 {
 	int i;
 	int j;
-
-	if (s >= e) return;
 
 	/* 随机选择哨兵，避免原始数组基本有序导致复杂度上升 */
 	i = rand() % (e - s + 1) + s;
@@ -47,23 +49,67 @@ void quicksort_oneway(int arr[], int s, int e)
 
 	swap(&arr[s], &arr[i]);
 
-	// 此时，哨兵所在位置为i
-	quicksort_oneway(arr, s, i - 1);
-	quicksort_oneway(arr, i + 1, e);
+	return i;
 }
 
 /*
- * 以数组随机位置的数为哨兵的双路快速排序
+ * 以数组随机位置的数为哨兵的单路快速排序的非递归实现，双路和三路类似
  * arr：要排序的数组
  * s：数组的起始下标
  * e：数组的末尾下标
  */
-void quicksort_twoway(int arr[], int s, int e)
+void quicksort_oneway_stack(int arr[], int s, int e)
+{
+	int i;
+	int left;
+	int right;
+	int index;
+	int stack[1000];
+
+	stack[0] = s;
+	stack[1] = e;
+    index = 1;
+    while(index != -1)
+	{
+		right = stack[index--];
+		left = stack[index--];
+
+		i = partition_oneway(arr, left, right);
+
+		if(i - 1 > left)
+		{
+			stack[++index] = left;
+			stack[++index] = i - 1;
+		}
+		if(i + 1 < right)
+		{
+			stack[++index] = i + 1;
+			stack[++index] = right;
+		}
+	}
+}
+
+/*
+ * 以数组随机位置的数为哨兵的单路快速排序，时间复杂度O(n2)，属于非稳定排序
+ * arr：要排序的数组
+ * s：数组的起始下标
+ * e：数组的末尾下标
+ */
+void quicksort_oneway(int arr[], int s, int e)
+{
+	int i;
+
+	if (s >= e) return;
+
+	i = partition_oneway(arr, s, e);
+	quicksort_oneway(arr, s, i - 1);
+	quicksort_oneway(arr, i + 1, e);
+}
+
+int partition_twoway(int arr[], int s, int e)
 {
 	int i;
 	int j;
-
-	if (s >= e) return;
 
 	/* 随机选择哨兵，避免原始数组基本有序导致复杂度上升 */
 	i = rand() % (e - s + 1) + s;
@@ -95,24 +141,31 @@ void quicksort_twoway(int arr[], int s, int e)
 
 	swap(&arr[s], &arr[j]);
 
-	// 此时，哨兵所在位置为j
-	quicksort_twoway(arr, s, j - 1);
-	quicksort_twoway(arr, j + 1, e);
+	return j;
 }
 
 /*
- * 以数组随机位置的数为哨兵的三路快速排序
+ * 以数组随机位置的数为哨兵的双路快速排序
  * arr：要排序的数组
  * s：数组的起始下标
  * e：数组的末尾下标
  */
-void quicksort_threeway(int arr[], int s, int e)
+void quicksort_twoway(int arr[], int s, int e)
+{
+	int i;
+
+	if (s >= e) return;
+
+	i = partition_twoway(arr, s, e);
+	quicksort_twoway(arr, s, i - 1);
+	quicksort_twoway(arr, i + 1, e);
+}
+
+void partition_threeway(int arr[], int s, int e, int *left, int *right)
 {
 	int k;
 	int i;
 	int j;
-
-	if (s >= e) return;
 
 	/* 随机选择哨兵，避免原始数组基本有序导致复杂度上升 */
 	i = rand() % (e - s + 1) + s;
@@ -151,8 +204,52 @@ void quicksort_threeway(int arr[], int s, int e)
 	}
 
 	swap(&arr[s], &arr[i]);
+	*left = i - 1;
+	*right = j;
+}
 
-	// 此时，哨兵所在位置为j
-	quicksort_threeway(arr, s, i - 1);
-	quicksort_threeway(arr, j, e);
+/*
+ * 以数组随机位置的数为哨兵的三路快速排序
+ * arr：要排序的数组
+ * s：数组的起始下标
+ * e：数组的末尾下标
+ */
+void quicksort_threeway(int arr[], int s, int e)
+{
+	int left;
+	int right;
+
+	if (s >= e) return;
+
+	partition_threeway(arr, s, e, &left, &right);
+
+	// 此时，与哨兵相等的元素范围为left + 1到right - 1
+	quicksort_threeway(arr, s, left);
+	quicksort_threeway(arr, right, e);
+}
+
+/*
+ * 以数组随机位置的数为哨兵的三路快速排序，模拟尾递归形式，并不能达到尾递归的优化效果
+ * arr：要排序的数组
+ * s：数组的起始下标
+ * e：数组的末尾下标
+ */
+ void quicksort_threeway_tail(int arr[], int s, int e)
+{
+	int i;
+	int j;
+	int k;
+	int left;
+	int right;
+
+	i = s;
+	j = e;
+	while(i < j)
+	{
+		// 此时，与哨兵相等的元素范围为left + 1到right - 1
+		partition_threeway(arr, i, j, &left, &right);
+		k = i;
+		i = right;
+		quicksort_threeway(arr, k, left);
+	}
 }

@@ -70,6 +70,8 @@ int binarysearch3(int arr[], int s, int e, int k)
 
 	/*
 	 * 使用i < j作为判断条件，循环内不会对最终剩下的一个数进行判断
+	 * 必须是i = mid + 1而不是i = mid，后者会导致i + 1 = j时可能的死循环
+	 * 而j = mid或者j = mid - 1均可，识情况而定
 	 * 适用于某些场景
 	 * 若最终一定会返回数组内下标，则循环结束后可以直接返回i
 	 */
@@ -80,7 +82,7 @@ int binarysearch3(int arr[], int s, int e, int k)
 		mid = (unsigned int)(s + e) >> 1;
 		if (arr[mid] == k) return mid;
 		if (arr[mid] > k)
-			j = mid;
+			j = mid - 1;
 		else
 			i = mid + 1;
 	}

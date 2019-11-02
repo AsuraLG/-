@@ -10,13 +10,15 @@ void selectsort(int arr[], int s, int e)
 	int j;
 	int tmp;
 
-	for(i = s; i <= e - 1;i++)
+	for(i = s; i <= e - 1; i++)
 	{
 		tmp = i;
-		for(j = i + 1; j <= e; j++)
+		for  (j = i + 1; j   <= e; j++)
 		{
-			if(arr[tmp] > arr[j]) tmp = j;
+			if  (arr[tmp] > arr[j])
+				tmp = j;
 		}
-		if (tmp != i) swap(&arr[tmp], &arr[i]);
+		if   (tmp != i)
+			swap(&arr[tmp], &arr[i]);
 	}
 }

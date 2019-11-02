@@ -38,3 +38,31 @@ int getRand(int range)
 
 	return res;
 }
+
+int quickScanf()
+{
+	char c;
+	int num = 0;
+
+	do
+	{
+		c = getchar();
+	}
+	while(c < '0' || c > '9');
+
+	do
+	{
+		num = (num << 3) + (num << 1) + c - '0';
+		c = getchar();
+	}
+	while(c >= '0' && c <= '9');
+
+	return num;
+}
+
+void quickPrintf(int n)
+{
+	int tmp = n / 10;
+	if(tmp) quickPrintf(tmp);
+	putchar(n % 10 + '0');
+}
